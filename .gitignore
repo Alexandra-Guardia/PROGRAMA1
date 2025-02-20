@@ -1,18 +1,31 @@
-*/config/development
-*/logs/log-*.php
-!*/logs/index.html
-*/cache/*
-!system/cache/*
-!*/cache/index.html
-!*/cache/.htaccess
-
-user_guide_src/build/*
-user_guide_src/cilexer/build/*
-user_guide_src/cilexer/dist/*
-user_guide_src/cilexer/pycilexer.egg-info/*
-
-#codeigniter 3
-application/logs/*
-!application/logs/index.html
-!application/logs/.htaccess
-/vendor/
+from flask import Flask, render_template, request
+app = Flask(__name__)
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    mensaje = ""
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        try:
+            peso = float(request.form.get('peso')) ##lo defini con float ya que funciona con punto decimal
+            estatura = float(request.form.get('estatura'))
+            
+            if peso <= 0 or estatura <= 0:
+                mensaje = "El peso y la estatura deben ser mayores a cero."
+            else:
+                imc = peso / (estatura ** 2)  
+                if imc < 18.5:
+                    estado = "tienes bajo peso ¡CUIDADO!"
+                elif 18.5 <= imc < 24.9:
+                    estado = "tienes un peso normal"
+                elif 25 <= imc < 29.9:
+                    estado = "tienes sobrepeso ¡CUIDADO!"
+                else:
+                    estado = "tienes obesidad ¡CUIDADO!"
+                
+                mensaje = f"{nombre}, tu IMC es {imc:.2f} y tienes {estado}."
+        except ValueError:
+            mensaje = "Por favor, ingresa valores numéricos válidos para peso y estatura."
+    
+    return render_template('index.html', mensaje=mensaje)
+if __name__ == '__main__':
+    app.run(debug=True)
